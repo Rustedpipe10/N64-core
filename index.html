@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>N64 Web Emulator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body, #game {
+      width: 100%;
+      height: 100%;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+    }
+    #dropzone {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      border: 2px dashed #444;
+      margin: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+      padding: 24px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    #dropzone.dragover {
+      border-color: #4da6ff;
+      background: rgba(77, 166, 255, 0.08);
+    }
+    #dropzone h1 {
+      font-size: 1.5rem;
+    }
+    #dropzone p {
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+    #file-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="dropzone">
+    <h1>Choose or Drop an N64 ROM</h1>
+    <p>Accepted formats: .z64, .n64, .v64, .zip (runs locally in your browser)</p>
+    <input type="file" id="file-input" accept=".z64,.n64,.v64,.zip" />
+  </div>
+  <div id="game"></div>
+
+  <script>
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("file-input");
+
+    function startEmulator(file) {
+      if (!file) return;
+      dropzone.style.display = "none";
+
+      window.EJS_player = "#game";
+      window.EJS_core = "n64";
+      window.EJS_gameName = file.name.replace(/\.[^/.]+$/, "");
+      window.EJS_gameUrl = URL.createObjectURL(file);
+      window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+
+      const script = document.createElement("script");
+      script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+      document.body.appendChild(script);
+    }
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => startEmulator(e.target.files[0]));
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      startEmulator(e.dataTransfer.files[0]);
+    });
+  </script>
+</body>
+</html>
